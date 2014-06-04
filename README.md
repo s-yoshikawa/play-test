@@ -1,4 +1,4 @@
-play-test
+README
 =========
 
 playframework test

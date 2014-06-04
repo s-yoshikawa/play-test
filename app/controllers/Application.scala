@@ -1,12 +1,23 @@
 package controllers
 
 import controllers.request.SampleRequest
-
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.{ JsError, Json }
+import services.WsService
+import play.api.libs.ws.WS
+import play.api.Play.current
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.Await
+import scala.concurrent._
+import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.duration._
 
 object Application extends Controller {
+
+//  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  val URL = "http://localhost:9200"
 
   def index = Action {
     Ok
@@ -35,5 +46,23 @@ object Application extends Controller {
       e => BadRequest("Detected error:" + JsError.toFlatJson(e))
     }
 
+  }
+
+  def await = Action {
+    val response = Await.result(WS.url(URL).get(), 1.seconds)
+    Ok(response.body)
+  }
+
+  def body() = Action.async {
+    WS.url(URL).get().map { response =>
+      Ok("body: " + response.body)
+    }
+  }
+
+  def notAsync() = Action { request =>
+    WS.url(URL).get().map { response =>
+      Ok("body: " + response.body)
+    }
+    Ok("notAsync")
   }
 }
